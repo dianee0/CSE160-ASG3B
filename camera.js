@@ -1,8 +1,8 @@
 class Camera{
     constructor(aspectRatio, near, far){
-        this.fov = 30;
-        this.eye = new Vector3([1,1,5]);
-        this.at = new Vector3([0,0,0]);
+        this.fov = 60;
+        this.eye = new Vector3([0,0,3]);
+        this.at = new Vector3([0,1,-1]);
         this.up = new Vector3([0,1,0]);
 
         //Pass the view Matrix
@@ -63,6 +63,25 @@ class Camera{
 
     panRight(alpha) {
         this.panLeft(-alpha);
+    }
+
+    panUp(angle) {
+        // Compute the right vector
+        let f = new Vector3();
+        f.set(this.at).sub(this.eye).normalize();
+        let right = Vector3.cross(f, this.up).normalize();
+    
+        // Create a rotation matrix around the right vector
+        let rotationMatrix = new Matrix4().setRotate(angle, right.elements[0], right.elements[1], right.elements[2]);
+    
+        // Rotate the forward vector
+        let f_prime = rotationMatrix.multiplyVector3(f);
+    
+        // Update the at and up vectors
+        this.at = new Vector3(this.eye.elements).add(f_prime);
+        this.up = Vector3.cross(right, f_prime).normalize();
+    
+        this.updateviewMat();
     }
 
     updateviewMat() {
