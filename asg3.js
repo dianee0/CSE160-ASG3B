@@ -489,7 +489,7 @@ function drawMap() {
           body.color = [1.0,1.0,1.0,1.0];
           body.textureNum = 3;
           body.matrix.translate(x-4,z,y-4);
-          body.render();
+          body.renderfast();
         }
       }
     }
