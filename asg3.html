@@ -1,57 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8" />
-    <title>Assignment 2: Blocky Animal</title>
-    <link rel="stylesheet" type="text/css" href="./stylesheet.css">
-  </head>
-
-  <body onload="main()">
+    <title>Assignment 3: Find your bunny!</title>
+    <link rel="stylesheet" type="text/css" href="../CSE160-ASG3B/stylesheet.css">
+</head>
+<body onload="main()">
     <div>
-        <canvas id="webgl" width="400" height="400">
-        Please use a browser that supports "canvas"
+        <canvas id="webgl" width="800" height="600">
+            Please use a browser that supports "canvas"
         </canvas>
     </div>
-    <p id="numdot"> XXX </p>
-    
-    <p>
+    <p id="numdot">XXX</p>
 
-    Animation:
-    <button type="button" id="animationOnButton">ON</button>
-    <button type="button" id="animationOffButton">OFF</button>
-
-    </p>
-    <!-- <button type="button" id="foxButton">Show Fox</button> -->
-
-    <p>
-    Arm Joint <input type="range" min="-80" max="20" value="0" class="slider" id="armSlide">
-    <p>
-    Thigh Joint <input type="range" min="0" max="45" value="0" class="slider" id="legSlide">
-    Feet Joint <input type="range" min="0" max="45" value="0" class="slider" id="backfeetSlide">
-    <p>
-      Reset Camera:
-      <button type="button" id="resetCameraButton">Reset</button>
-    <p>
-    Camera Angle X <input type="range" min="-0" max="360" value="0" class="slider" id="angleSlide">
-    <p>
-    <div>
-      <p>Diane Poeng - dpoeng@ucsc.edu</p>
-      <p>Notes to Grader:
-      </p>
+    <div class="instructions">
+        <button type="button" id="resetCameraButton">Go Back to Start</button>
+        <h2>Instructions</h2>
+        <ul>
+            <li><strong>Movement Controls:</strong></li>
+            <ul>
+                <li><strong>W:</strong> Move Forward</li>
+                <li><strong>S:</strong> Move Backward</li>
+                <li><strong>A:</strong> Move Left</li>
+                <li><strong>D:</strong> Move Right</li>
+                <li><strong>Q:</strong> Rotate Left</li>
+                <li><strong>E:</strong> Rotate Right</li>
+            </ul>
+            <li><strong>Mouse Controls:</strong></li>
+            <ul>
+                <li>Hold left mouse button and move to rotate the camera</li>
+            </ul>
+            <li id="story"><strong>Story:</strong></li>
+            <ul>
+                <li id="story"><em>Your bunny ran away from your minecraft home. 
+                  You found his footprints in the grass, indicating that
+                  your bunny entered the maze. Help locate your lost bunny!</em></li>
+            </ul>
+        </ul>
     </div>
 
+    <div class="footer">
+        <p>Diane Poeng - dpoeng@ucsc.edu</p>
+        <p><strong>Notes to Grader:</strong></p>
+        <img src="./bunnyimg.png" alt="Bunny Image" width="200">
+        <img src="./bunnymaze.png" alt="Bunny Maze" width="200">
+        <p>These are examples of the bunny being in the maze. The maze is randomly generated, 
+          and we find a random open space where the bunny is placed. By refreshing the page, you can see the entrance
+          of the maze changing because the maze is randomly generated. You can hover over the maze and look for the bunny to see that
+          the bunny is randomly placed each time.
+        </p>
+    </div>
 
-    <script src="./lib/webgl-utils.js"></script>
-    <script src="./lib/webgl-debug.js"></script>
-    <script src="./lib/cuon-utils.js"></script>
-    <script src="./lib/cuon-matrix-cse160.js"></script>
-    <script src="./Circle.js"></script>
-    <script src="./Triangle.js"></script>
-    <script src="./Point.js"></script>
-    <script src="./Cube.js"></script>
-    <script src="./bunny.js"></script>
-    <script src="./camera.js"></script>
-    <script src="./asg3.js"></script>
-  </body>
-
+    <script src="../CSE160-ASG3B/lib/webgl-utils.js"></script>
+    <script src="../CSE160-ASG3B/lib/webgl-debug.js"></script>
+    <script src="../CSE160-ASG3B/lib/cuon-utils.js"></script>
+    <script src="../CSE160-ASG3B/lib/cuon-matrix-cse160.js"></script>
+    <script src="../CSE160-ASG3B/Circle.js"></script>
+    <script src="../CSE160-ASG3B/Triangle.js"></script>
+    <script src="../CSE160-ASG3B/Point.js"></script>
+    <script src="../CSE160-ASG3B/Cube.js"></script>
+    <script src="../CSE160-ASG3B/bunny.js"></script>
+    <script src="../CSE160-ASG3B/camera.js"></script>
+    <script src="../CSE160-ASG3B/asg3.js"></script>
+</body>
 </html>

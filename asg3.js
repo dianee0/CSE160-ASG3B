@@ -198,33 +198,13 @@ let g_legAngle = 0;
 let g_backFootAngle = 0;
 let g_feetAngle = 0;
 
-let g_Animation = false;
+// let g_Animation = false;
 let camera;
 let myBunny;
 
 
 function addActionsForHTMLUI(){
-
-    // // slider events
-    // document.getElementById("redSlide").addEventListener("mouseup", function() { g_selectedColor[0] = this.value/100; })
-    document.getElementById("animationOnButton").onclick = function() { g_Animation =true; }
-    document.getElementById("animationOffButton").onclick = function() { g_Animation =false; }
-
-    canvas.onclick = function(ev) {
-        if (ev.shiftKey) {
-            triggerWinkAnimation(); // Call the wink animation function
-        }
-    };
-
-    document.getElementById("armSlide").addEventListener("mousemove", function() { g_armAngle = this.value; renderAllShapes(); })
-    document.getElementById("backfeetSlide").addEventListener("mousemove", function() { g_backFootAngle = this.value; renderAllShapes(); })
-    document.getElementById("legSlide").addEventListener("mousemove", function() { g_legAngle = this.value; renderAllShapes(); })
-
-    document.getElementById("angleSlide").addEventListener("mousemove", function() { g_globalAngle = this.value; renderAllShapes(); })
     document.getElementById("resetCameraButton").onclick = resetCameraAngles;
-
-
-
 }
 
 function initTextures(gl, n) {
@@ -333,7 +313,12 @@ function main() {
   camera = new Camera(canvas.width / canvas.height, 0.1, 1000); // Initialize camera
   // Draw bunny
   myBunny = new Bunny();
-  myBunny.setPosition(4, 2, 0); // Set position or other transformations
+  // Randomly place the bunny in the maze
+  let [bunnyX, bunnyY] = getRandomOpenPosition(maze);
+  console.log(bunnyX, bunnyY);
+  // Pass the coordinates to the Bunny instance
+  myBunny = new Bunny(bunnyX, bunnyY);
+
   // console.log('Camera initialized:', camera);
 
   initTextures(gl, 0); // Initialize textures
@@ -351,9 +336,6 @@ function tick() {
     // print some debug info so we know we are running
     g_seconds = performance.now()/1000.0-g_startTime;
     // console.log(g_seconds);
-
-    // update animation angles
-    updateAnimationAngles();
 
     // draw everything
     renderAllShapes();
@@ -377,25 +359,23 @@ function convertCoordinatesEventToGL(ev){
     return ([x,y]);
 }
 
-function updateAnimationAngles() {
-    if (g_Animation) { // if yellow animation is on
-        g_armAngle = (45*Math.sin(g_seconds));
-        g_legAngle = (35*Math.sin(g_seconds))
-        g_backFootAngle = 27.5 + 17.5 * Math.sin(g_seconds);  // Oscillates between 0 and 45 degrees
-
-    }
-
-}
-
 function resetCameraAngles() {
-    // Reset angles
-    g_globalAngle = 0;
+  // Reset angles
+  g_globalAngle = 0;
 
-    // Update slider positions
-    document.getElementById('angleSlide').value = 0;
+  // Reset camera position and orientation
+  camera.eye = new Vector3([20, 3, 3]);
+  camera.at = new Vector3([-50, 1, 0]);
+  camera.up = new Vector3([0, 1, 0]);
+  
+  // Update the view matrix with the new camera settings
+  camera.updateviewMat();
 
-    // Re-render the scene
-    renderAllShapes();
+  // Update slider positions
+  document.getElementById('angleSlide').value = 0;
+
+  // Re-render the scene
+  renderAllShapes();
 }
 
 function keyDown(ev) {
@@ -420,81 +400,114 @@ function keyDown(ev) {
           camera.panRight(10); // Rotate right, angle in degrees
           break;
       default:
-          return; // Skip rendering if no relevant key is pressed
+          return; // Skip rendering if no key is pressed
   }
   gl.uniformMatrix4fv(u_ViewMatrix, false, camera.viewMat.elements);
-  renderAllShapes(); // Update the scene rendering
+  renderAllShapes(); // Update the scene
+}
+var g_map = [];
+
+// Generate the maze
+function generateMaze(width, height) {
+    let maze = Array.from({ length: height }, () => Array(width).fill(1));
+    let stack = [];
+    let directions = [
+        [0, 1], [1, 0], [0, -1], [-1, 0]
+    ];
+
+    function isInBounds(x, y) {
+        return x >= 0 && y >= 0 && x < width && y < height;
+    }
+
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function carveMaze(x, y) {
+        maze[y][x] = 0;
+        stack.push([x, y]);
+
+        while (stack.length > 0) {
+            let [cx, cy] = stack[stack.length - 1];
+            let shuffledDirections = shuffle(directions);
+
+            let carved = false;
+            for (let [dx, dy] of shuffledDirections) {
+                let nx = cx + dx * 2;
+                let ny = cy + dy * 2;
+                if (isInBounds(nx, ny) && maze[ny][nx] === 1) {
+                    maze[cy + dy][cx + dx] = 0;
+                    maze[ny][nx] = 0;
+                    stack.push([nx, ny]);
+                    carved = true;
+                    break;
+                }
+            }
+
+            if (!carved) {
+                stack.pop();
+            }
+        }
+    }
+
+    carveMaze(1, 1);
+    return maze;
 }
 
-var g_map= [
-  [
-    [1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1],
-  ],
-  [
-    [1,1,1,1,1,1,1,1],
-    [1,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,1],
-    [1,1,1,1,1,1,1,1],
-  ],
-  [
-    [1,1,1,1,1,1,1,1],
-    [1,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,1],
-    [1,1,1,1,1,1,1,1],
-  ],
-  [
-    [1,1,1,1,1,1,1,1],
-    [1,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,1],
-    [1,1,1,1,1,1,1,1],
-  ],
+// Generate the maze and set g_map
+let maze = generateMaze(32, 32);
+g_map = [];
 
-  [
-    [1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1],
-  ]
-];
-
-function drawMap() {
-  for (let z=0; z<g_map.length; z++){
-    for (let x=0; x<8; x++){
-      for (let y=0; y<8; y++){
-        var body = new Cube();
-        if (g_map[z][x][y]==1){
-          body.color = [1.0,1.0,1.0,1.0];
-          body.textureNum = 3;
-          body.matrix.translate(x-4,z,y-4);
-          body.renderfast();
+for (let z = 0; z < 9; z++) { // Remove ceiling by setting z < 9
+    let layer = [];
+    for (let x = 0; x < 32; x++) {
+        let row = [];
+        for (let y = 0; y < 32; y++) {
+            if (z === 0) {
+                row.push(1); // Floor only
+            } else {
+                row.push(maze[x][y]); // Maze walls and paths
+            }
         }
-      }
+        layer.push(row);
     }
+    g_map.push(layer);
+}
+
+// Draw the map function
+function drawMap() {
+  for (let z = 0; z < g_map.length; z++) {
+      for (let x = 0; x < 32; x++) {
+          for (let y = 0; y < 32; y++) {
+              var body = new Cube();
+              if (g_map[z][x][y] == 1) {
+                  body.color = [1.0, 1.0, 1.0, 1.0];
+                  body.textureNum = 3;
+                  body.matrix.translate(x - 16, z - 0.75, y - 16);
+                  body.renderfast();
+              }
+          }
+      }
   }
 }
+
+// Function to find a random open position in the maze
+function getRandomOpenPosition(maze) {
+    let openPositions = [];
+    for (let x = 1; x < maze.length - 1; x++) {
+        for (let y = 1; y < maze[x].length - 1; y++) {
+            if (maze[x][y] === 0) {
+                openPositions.push([x, y]);
+            }
+        }
+    }
+    return openPositions[Math.floor(Math.random() * openPositions.length)];
+}
+
 
 function renderAllShapes() {
   var startTime = performance.now();
@@ -505,29 +518,29 @@ function renderAllShapes() {
   gl.uniformMatrix4fv(u_ViewMatrix, false, camera.viewMat.elements);
   gl.uniformMatrix4fv(u_GlobalRotateMatrix, false, new Matrix4().rotate(g_globalAngle, 0, 1, 0).elements);
 
-  drawMap();
-  // Assuming drawSkybox and drawFloor are defined or handled within drawMap
-  myBunny.draw(gl, u_ModelMatrix);
+  drawMap(); // Draw the cave map
 
-  //sky 
+  myBunny.draw(gl, u_ModelMatrix); // Ensure bunny is drawn after the map
+
+  // Skybox
   var skybox = new Cube();
-  skybox.color = [1,0,0,1];
-  skybox.textureNum = 0; // Assuming texture unit 0 has the sky texture
+  skybox.color = [1, 0, 0, 1];
+  skybox.textureNum = 0; // texture unit 0 has the sky texture
   skybox.matrix.scale(50, 50, 50);
   skybox.matrix.translate(-0.5, -0.5, -0.5); // Center the cube
   skybox.render();
 
-  //Floor
+  // Floor
   var floor = new Cube();
   floor.color = [0.0, 50.0, 0.0, 1.0];
   floor.textureNum = 2;
-  floor.matrix.translate(0,-.75,0.0);
-  floor.matrix.scale(100,0,100);
-  floor.matrix.translate(-.5,0,-0.5);
+  floor.matrix.translate(0, -0.75, 0.0);
+  floor.matrix.scale(100, 0, 100);
+  floor.matrix.translate(-0.5, 0, -0.5);
   floor.render();
 
   var duration = performance.now() - startTime;
-  sendTextToHTML(" ms: " + Math.floor(duration) + " fps: " + Math.floor(10000/duration)/10, "numdot");
+  sendTextToHTML(" ms: " + Math.floor(duration) + " fps: " + Math.floor(10000 / duration) / 10, "numdot");
 }
 
 function sendTextToHTML(text, htmlID){

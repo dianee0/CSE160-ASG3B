@@ -1,8 +1,8 @@
 class Camera{
     constructor(aspectRatio, near, far){
         this.fov = 60;
-        this.eye = new Vector3([10,3,3]);
-        this.at = new Vector3([0,1,-1]);
+        this.eye = new Vector3([20,3,3]);
+        this.at = new Vector3([-50,1,0]);
         this.up = new Vector3([0,1,0]);
 
         //Pass the view Matrix
