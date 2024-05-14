@@ -371,9 +371,6 @@ function resetCameraAngles() {
   // Update the view matrix with the new camera settings
   camera.updateviewMat();
 
-  // Update slider positions
-  document.getElementById('angleSlide').value = 0;
-
   // Re-render the scene
   renderAllShapes();
 }
